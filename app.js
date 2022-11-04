@@ -113,6 +113,8 @@ app.get('/handled', function (req, res) {
 // The error handler must be before any other error middleware
 app.use(Sentry.Handlers.errorHandler());
 
-app.listen(process.env.PORT || 3001, function () {
-    console.log('CORS-enabled web server listening on port 3001');
+const port = process.env.PORT || 3001;
+
+app.listen(port, function () {
+    console.log(`CORS-enabled web server listening on port ${port}`);
 });
