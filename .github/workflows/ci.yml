@@ -25,7 +25,6 @@ jobs:
         password: ${{ secrets.HARBOR_TOKEN }}
     - name: Build Docker
       run: |
-        cd ${{ inputs.PRODUCT }}
         export DOCKER_BUILDKIT=1
         docker build -t ops-harbor-apne1.knowre-dev.com/sentry-demo/app/express:${{ inputs.VERSION }} \
         -t ops-harbor-apne1.knowre-dev.com/sentry-demo/app/express:latest .
