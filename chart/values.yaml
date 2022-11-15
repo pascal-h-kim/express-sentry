@@ -1,0 +1,101 @@
+# Default values for express-sentry.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: "524525419461.dkr.ecr.ap-northeast-1.amazonaws.com/sentry-demo/app/express"
+  pullPolicy: Always #IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "1.0.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: NodePort
+  port: 3001
+
+ingress:
+  enabled: true
+  className: ""
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/load-balancer-name: dev-apne2-kr-sentry-demo-alb
+    alb.ingress.kubernetes.io/group.name: alb-sentry-demo
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/backend-protocol: HTTPS
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-2016-08
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-1:524525419461:certificate/1630ec42-289a-4bfe-be62-6e7084946da4
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/tags: createdBy=aws-controller
+    alb.ingress.kubernetes.io/target-type: ip
+    external-dns.alpha.kubernetes.io/hostname: express-sentry.knowre-dev.com
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/success-codes: "200"
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+    alb.ingress.kubernetes.io/healthy-threshold-count: "2"
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: "2"
+  hosts:
+    - host: express-sentry.knowre-dev.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 60
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector:
+  nodegroup-type: api
+
+tolerations: []
+
+affinity: {}

@@ -110,6 +110,14 @@ app.get('/handled', function (req, res) {
     }
 });
 
+app.get('/liveness', async (req, res) => {
+    return res.status(200).json({status:"success"});
+  });
+  
+  app.get('/readiness', async (req, res) => {
+    return res.status(200).json({status:"success"});
+  });
+  
 // The error handler must be before any other error middleware
 app.use(Sentry.Handlers.errorHandler());
 
