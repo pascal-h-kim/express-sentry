@@ -48,7 +48,7 @@ ingress:
     alb.ingress.kubernetes.io/load-balancer-name: dev-apne2-kr-sentry-demo-alb
     alb.ingress.kubernetes.io/group.name: alb-sentry-demo
     alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/backend-protocol: HTTPS
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
     alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-2016-08
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-1:524525419461:certificate/1630ec42-289a-4bfe-be62-6e7084946da4
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
