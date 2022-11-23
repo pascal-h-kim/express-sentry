@@ -1,5 +1,5 @@
 {
-  "name": "t-em-backend",
+  "name": "express-sentry",
   "version": "1.0.0",
   "dependencies": {
     "@sentry/cli": "^1.37.0",

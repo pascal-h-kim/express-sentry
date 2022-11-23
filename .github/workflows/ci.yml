@@ -1,4 +1,4 @@
-name: Sample Node.js Application
+name: Sample ExpressJS Application
 
 on:
   push:
