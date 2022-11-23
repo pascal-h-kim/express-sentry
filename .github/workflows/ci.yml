@@ -90,8 +90,7 @@ jobs:
           --set image.tag=${{ env.RELEASE_VERSION }}
     - name: Setup Sentry Release
       run: |
-          curl https://ops-sentry.knowre.com//api/0/organizations/${{ env.SENTRY_ORG_SLUG }}/releases/ \
-            -H 'Authorization: ${{ secrets.SENTRY_AUTH_TOKEN }}' \
-            -H 'Content-Type: application/json' \
-            -d '{"version":"${{ env.RELEASE_VERSION }}","ref":"${{ github.event.head_commit.id }}","projects":["${{ env.SENTRY_PROJECT }}"]}'
-
+        curl https://ops-sentry.knowre.com//api/0/organizations/${{ env.SENTRY_ORG_SLUG }}/releases/ \
+          -H 'Authorization: Bearer ${{ secrets.SENTRY_AUTH_TOKEN }}' \
+          -H 'Content-Type: application/json' \
+          -d '{"version":"${{ env.RELEASE_VERSION }}","ref":"${{ github.event.head_commit.id }}","projects":["${{ env.SENTRY_PROJECT }}"]}'
