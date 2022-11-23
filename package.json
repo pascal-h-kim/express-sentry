@@ -1,6 +1,6 @@
 {
   "name": "express-sentry",
-  "version": "1.0.6", 
+  "version": "1.0.7", 
   "dependencies": {
     "@sentry/cli": "^1.37.0",
     "@sentry/node": "^7.19.0",
