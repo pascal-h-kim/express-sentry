@@ -1,22 +1,56 @@
 name: Sample Node.js Application
 
 on:
-  workflow_dispatch:
-    inputs:
-      VERSION:
-        description: "배포 버전"
-        required: true
-        type: string
+  push:
+    branches: [master]
+    paths:
+      - "package.json"
+  pull_request:
+    branches: [master]
+    paths:
+      - "package.json"
+env:
+  SENTRY_ORG_SLUG: 'sentry'
+  SENTRY_PROJECT: 'express-demo'
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+      INLINE_RUNTIME_CHUNK: false
+      # PACKAGE_JSON_PATH: "react-demo"
 
     steps:
     - name: Git Clone
       uses: actions/checkout@v3
-#      with:
-#        ref: ${{ inputs.VERSION }}
+    - name: Use Node.js 16.13.2
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.13.2
+        cache: "npm"
+    - name: Install modules
+      run: npm install
+    - name: Build project
+      run: npm run build
+    - name: Check Release Version
+      run: |
+        PACKAGE_VERSION=$(cat ./package.json | jq '.version' | tr -d '"') 
+        echo "RELEASE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+        echo "Application Release Version : $PACKAGE_VERSION"
+        GIT_TAG_EXIST=$(git ls-remote --tags origin $PACKAGE_VERSION)
+        echo "GIT_TAG_EXIST: $GIT_TAG_EXIST"
+        if [[ ! -z $GIT_TAG_EXIST ]]; then
+          echo "Release Tag Already Exist"
+          exit 1;
+        fi
+
+    - name: Create Release Tag
+      run: |
+        git config --global user.email ${{ github.event.head_commit.author.email }}
+        git config --global user.name ${{ github.event.head_commit.author.name }}
+        git tag ${{ env.RELEASE_VERSION }} -a -m "${{ github.event.head_commit.message }}"
+        git push origin ${{ env.RELEASE_VERSION }}
+
     - name: Login to Harbor
       uses: docker/login-action@v1
       with:
@@ -26,7 +60,38 @@ jobs:
     - name: Build Docker
       run: |
         export DOCKER_BUILDKIT=1
-        docker build -t ops-harbor-apne1.knowre-dev.com/sentry-demo/app/express:${{ inputs.VERSION }} \
+        docker build -t ops-harbor-apne1.knowre-dev.com/sentry-demo/app/express:${{ env.RELEASE_VERSION }} \
         -t ops-harbor-apne1.knowre-dev.com/sentry-demo/app/express:latest .
-        docker push ops-harbor-apne1.knowre-dev.com/sentry-demo/app/express:${{ inputs.VERSION }}
+        docker push ops-harbor-apne1.knowre-dev.com/sentry-demo/app/express:${{ env.RELEASE_VERSION }}
         docker push ops-harbor-apne1.knowre-dev.com/sentry-demo/app/express:latest
+    - name: Create kube config
+      run: |
+        mkdir -p $HOME/.kube/
+        echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+        mkdir -p $HOME/.aws
+        echo "${{ secrets.AWS_PROFILE }}" > $HOME/.aws/credentials
+        chmod 644 $HOME/.aws/credentials
+        echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+
+    - name: Install helm
+      run: |
+        curl -LO https://get.helm.sh/helm-v3.8.0-linux-amd64.tar.gz
+        tar -zxvf helm-v3.8.0-linux-amd64.tar.gz
+        mv linux-amd64/helm /usr/local/bin/helm
+        helm version
+    # - name: Lint helm charts
+    #   run: helm lint ./chart
+    - name: Deploy
+      run: |
+        helm upgrade --install --atomic --timeout 1m express-sentry ./chart -f ./chart/values.yaml \
+          --namespace sentry --create-namespace \
+          --set image.tag=${{ env.RELEASE_VERSION }}
+    - name: Setup Sentry Release
+      run: |
+          curl https://ops-sentry.knowre.com//api/0/organizations/${{ env.SENTRY_ORG_SLUG }}/releases/ \
+            -H 'Authorization: Bearer ${{ secrets.SENTRY_AUTH_TOKEN }}' \
+            -H 'Content-Type: application/json' \
+            -d '{"version":"${{ env.RELEASE_VERSION }}","ref":"${{ github.event.head_commit.id }}","projects":["${{ env.SENTRY_PROJECT }}"]}'
+

@@ -1,0 +1,32 @@
+name: Sample Node.js Application
+
+on:
+  workflow_dispatch:
+    inputs:
+      VERSION:
+        description: "배포 버전"
+        required: true
+        type: string
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Git Clone
+      uses: actions/checkout@v3
+#      with:
+#        ref: ${{ inputs.VERSION }}
+    - name: Login to Harbor
+      uses: docker/login-action@v1
+      with:
+        registry: ops-harbor-apne1.knowre-dev.com
+        username: ${{ secrets.HARBOR_USERNAME }}
+        password: ${{ secrets.HARBOR_TOKEN }}
+    - name: Build Docker
+      run: |
+        export DOCKER_BUILDKIT=1
+        docker build -t ops-harbor-apne1.knowre-dev.com/sentry-demo/app/express:${{ inputs.VERSION }} \
+        -t ops-harbor-apne1.knowre-dev.com/sentry-demo/app/express:latest .
+        docker push ops-harbor-apne1.knowre-dev.com/sentry-demo/app/express:${{ inputs.VERSION }}
+        docker push ops-harbor-apne1.knowre-dev.com/sentry-demo/app/express:latest
