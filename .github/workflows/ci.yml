@@ -23,11 +23,11 @@ jobs:
     steps:
     - name: Git Clone
       uses: actions/checkout@v3
-    - name: Use Node.js 16.13.2
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.13.2
-        cache: "npm"
+    # - name: Use Node.js 16.13.2
+    #   uses: actions/setup-node@v3
+    #   with:
+    #     node-version: 16.13.2
+    #     cache: "npm"
     # - name: Install modules
     #   run: npm install
     # - name: Build project
@@ -91,7 +91,7 @@ jobs:
     - name: Setup Sentry Release
       run: |
           curl https://ops-sentry.knowre.com//api/0/organizations/${{ env.SENTRY_ORG_SLUG }}/releases/ \
-            -H 'Authorization: Bearer ${{ secrets.SENTRY_AUTH_TOKEN }}' \
+            -H 'Authorization: ${{ secrets.SENTRY_AUTH_TOKEN }}' \
             -H 'Content-Type: application/json' \
             -d '{"version":"${{ env.RELEASE_VERSION }}","ref":"${{ github.event.head_commit.id }}","projects":["${{ env.SENTRY_PROJECT }}"]}'
 
