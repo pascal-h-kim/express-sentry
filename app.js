@@ -8,7 +8,8 @@ const Sentry = require('@sentry/node');
 const Tracing = require('@sentry/tracing');
 
 Sentry.init({ 
-    dsn: "https://13cca338bb8649d68230f9bc1433c039@ops-sentry.knowre.com/36",
+    dsn: "https://c86b706a1f894366a4f396a4cba6a86a@ops-sentry.knowre.com/2", // self hosted
+    // dsn: "https://f6778c95195c4719b9726eeae1ae7f95@o4504208246833152.ingest.sentry.io/4504234896850944", // SAAS
     integrations: [
         // Enable HTTP calls tracing
         new Sentry.Integrations.Http({ tracing: true }),
